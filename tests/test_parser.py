@@ -34,7 +34,7 @@ def test_parsing_outdoor():
     advertisement = bytes_to_service_info(OUTDOOR_SENSOR_DATA)
     assert device.supported(advertisement)
     up = device.update(advertisement)
-    expected_name = "RuuviTag DE:AD:7B:3F:EF:AF"
+    expected_name = "RuuviTag EFAF"
     assert up.devices[None].name == expected_name  # Parsed from advertisement
     assert up.entity_values[KEY_TEMPERATURE].native_value == 7.2  # Celsius
     assert up.entity_values[KEY_HUMIDITY].native_value == 61.84  # %

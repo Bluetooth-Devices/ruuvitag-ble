@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
 from home_assistant_bluetooth import BluetoothServiceInfo
 from sensor_state_data import DeviceClass, Units
@@ -27,10 +28,12 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             return
 
         decoder = DataFormat5Decoder(raw_data)
-        mac = str(decoder.mac or service_info.address)  # Prefer MAC from advertisement.
+        # Compute short identifier from MAC address
+        # (preferring the MAC address the tag broadcasts).
+        identifier = short_address(decoder.mac or service_info.address)
         self.set_device_type("RuuviTag")
         self.set_device_manufacturer("Ruuvi Innovations Ltd.")
-        self.set_device_name(f"RuuviTag {mac}")
+        self.set_device_name(f"RuuviTag {identifier}")
 
         self.update_sensor(
             key=DeviceClass.TEMPERATURE,
