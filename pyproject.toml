@@ -1,6 +1,6 @@
 [project]
 name = "ruuvitag-ble"
-version = "0.1.0rc1"
+version = "0.1.1"
 description = "Manage Ruuvitag BLE devices"
 authors = [
     { name = "Aarni Koskela", email = "akx@iki.fi" },
