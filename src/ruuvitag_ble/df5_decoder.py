@@ -68,11 +68,11 @@ class DataFormat5Decoder:
         return -40 + (tx_power * 2)
 
     @property
-    def movement_counter(self) -> int | None:
+    def movement_counter(self) -> int:
         return self.data[8]
 
     @property
-    def measurement_sequence_number(self) -> int | None:
+    def measurement_sequence_number(self) -> int:
         return self.data[9]
 
     @property
