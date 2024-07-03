@@ -52,9 +52,14 @@ exclude_lines = [
     "raise NotImplementedError",
 ]
 
-[tool.isort]
-profile = "black"
-known_first_party = ["ruuvitag_ble", "tests"]
+[tool.ruff.lint]
+extend-select = [
+    "COM",
+    "I",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ruuvitag_ble", "tests"]
 
 [tool.mypy]
 check_untyped_defs = true
