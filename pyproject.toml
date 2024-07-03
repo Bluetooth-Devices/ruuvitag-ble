@@ -1,6 +1,5 @@
 [project]
 name = "ruuvitag-ble"
-version = "0.1.2"
 description = "Manage Ruuvitag BLE devices"
 authors = [
     { name = "Aarni Koskela", email = "akx@iki.fi" },
@@ -26,16 +25,16 @@ dependencies = [
     "home-assistant-bluetooth>=1.6",
     "sensor-state-data>=2.9",
 ]
+dynamic = [
+ "version",
+]
 
 [project.urls]
 "Bug Tracker" = "https://github.com/bluetooth-devices/ruuvitag-ble/issues"
 "Changelog" = "https://github.com/bluetooth-devices/ruuvitag-ble/blob/main/CHANGELOG.md"
 
-[tool.semantic_release]
-branch = "main"
-version_toml = "pyproject.toml:tool.poetry.version"
-version_variable = "src/ruuvitag_ble/__init__.py:__version__"
-build_command = "pip install poetry && poetry build"
+[tool.hatch.version]
+path = "src/ruuvitag_ble/__init__.py"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault --cov=ruuvitag_ble --cov-report=term-missing:skip-covered"
