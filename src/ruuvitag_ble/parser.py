@@ -7,6 +7,7 @@ from bluetooth_sensor_state_data import BluetoothData
 from home_assistant_bluetooth import BluetoothServiceInfo
 from sensor_state_data import DeviceClass, Units
 
+from ruuvitag_ble.df3_decoder import DataFormat3Decoder
 from ruuvitag_ble.df5_decoder import DataFormat5Decoder
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,11 +24,17 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             return None
 
         data_format = raw_data[0]
-        if data_format != 0x05:
+        if data_format not in (0x03, 0x05):
             _LOGGER.debug("Data format not supported: %s", raw_data)
             return
 
-        decoder = DataFormat5Decoder(raw_data)
+        decoder_classes = {
+            0x03: DataFormat3Decoder,
+            0x05: DataFormat5Decoder,
+        }
+
+        decoder = decoder_classes.get(data_format, DataFormat5Decoder)(raw_data)
+
         # Compute short identifier from MAC address
         # (preferring the MAC address the tag broadcasts).
         identifier = short_address(decoder.mac or service_info.address)
@@ -59,9 +66,11 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_unit_of_measurement=Units.ELECTRIC_POTENTIAL_MILLIVOLT,
             native_value=decoder.battery_voltage_mv,
         )
-        self.update_sensor(
-            key="movement_counter",
-            device_class=DeviceClass.COUNT,
-            native_unit_of_measurement=None,
-            native_value=decoder.movement_counter,
-        )
+
+        if data_format == 0x05:
+            self.update_sensor(
+                key="movement_counter",
+                device_class=DeviceClass.COUNT,
+                native_unit_of_measurement=None,
+                native_value=decoder.movement_counter,
+            )
