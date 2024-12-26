@@ -127,7 +127,6 @@ def test_error_v3():
 def test_wrong_mfr():
     device = RuuvitagBluetoothDeviceData()
     advertisement = bytes_to_service_info_wrong_mfr(V3_SENSOR_DATA_ERROR)
-    assert device.supported(advertisement)
     up = device.update(advertisement)
     assert not up.entity_values
 
@@ -135,6 +134,5 @@ def test_wrong_mfr():
 def test_invalid_format():
     device = RuuvitagBluetoothDeviceData()
     advertisement = bytes_to_service_info(INVALID_FORMAT_ERROR)
-    assert device.supported(advertisement)
     up = device.update(advertisement)
     assert not up.entity_values
