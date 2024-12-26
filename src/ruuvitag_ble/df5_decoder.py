@@ -72,7 +72,7 @@ class DataFormat5Decoder:
         if ax is None or ay is None or az is None:
             return None
         # Conversion to m/s^2
-        return math.sqrt(ax * ax + ay * ay + az * az) / 1000.0 * 9.8
+        return round(math.sqrt(ax * ax + ay * ay + az * az) / 1000.0 * 9.8, 2)
 
     @property
     def battery_voltage_mv(self) -> int | None:
