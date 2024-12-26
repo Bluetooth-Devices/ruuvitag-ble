@@ -44,6 +44,27 @@ class DataFormat3Decoder:
         return (ax, ay, az)
 
     @property
+    def acceleration_x_mss(self) -> float | None:
+        ax = self.data[5]
+        if ax == -32768:
+            return None
+        return round(ax / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_y_mss(self) -> float | None:
+        ay = self.data[6]
+        if ay == -32768:
+            return None
+        return round(ay / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_z_mss(self) -> float | None:
+        az = self.data[7]
+        if az == -32768:
+            return None
+        return round(az / 1000.0 * 9.8, 2)
+
+    @property
     def acceleration_total_mss(self) -> float | None:
         ax, ay, az = self.acceleration_vector_mg
         if ax is None or ay is None or az is None:
