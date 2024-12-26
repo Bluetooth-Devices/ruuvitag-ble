@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Type, Union
 
 from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
@@ -28,12 +29,18 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             _LOGGER.debug("Data format not supported: %s", raw_data)
             return
 
-        decoder_classes = {
+        decoder_classes: dict[
+            int,
+            Type[Union[DataFormat3Decoder, DataFormat5Decoder]],
+        ] = {
             0x03: DataFormat3Decoder,
             0x05: DataFormat5Decoder,
         }
 
-        decoder = decoder_classes.get(data_format, DataFormat5Decoder)(raw_data)
+        decoder: Union[DataFormat3Decoder, DataFormat5Decoder] = decoder_classes.get(
+            data_format,
+            DataFormat5Decoder,
+        )(raw_data)
 
         # Compute short identifier from MAC address
         identifier = short_address(service_info.address)
@@ -66,7 +73,7 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_value=decoder.battery_voltage_mv,
         )
 
-        if data_format == 0x05:
+        if isinstance(decoder, DataFormat5Decoder):
             self.update_sensor(
                 key="movement_counter",
                 device_class=DeviceClass.COUNT,
