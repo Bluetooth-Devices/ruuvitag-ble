@@ -72,6 +72,12 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_unit_of_measurement=Units.ELECTRIC_POTENTIAL_MILLIVOLT,
             native_value=decoder.battery_voltage_mv,
         )
+        self.update_sensor(
+            key=DeviceClass.ACCELERATION,
+            device_class=DeviceClass.ACCELERATION,
+            native_unit_of_measurement=Units.ACCELERATION_METERS_PER_SQUARE_SECOND,
+            native_value=decoder.acceleration_total_mss,
+        )
 
         if isinstance(decoder, DataFormat5Decoder):
             self.update_sensor(

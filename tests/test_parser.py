@@ -7,12 +7,19 @@ V5_SENSOR_DATA = (
     b"\x05\x05\xa0`\xa0\xc8\x9a\xfd4\x02\x8c\xff\x00cvriv\xde\xad{?\xef\xaf"
 )
 V3_SENSOR_DATA = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08\x8f"
+V5_SENSOR_DATA_SHORT = (
+    b"\x05\x05\xa0`\xa0\xc8\x9a\xfd4\x02\x8c\xff\x00cvriv\xde\xad{?\xef"
+)
+V3_SENSOR_DATA_SHORT = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08"
+V5_SENSOR_DATA_ERROR = b"\x05\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+V3_SENSOR_DATA_ERROR = b"\x03\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 
 KEY_TEMPERATURE = DeviceKey(key=DeviceClass.TEMPERATURE, device_id=None)
 KEY_HUMIDITY = DeviceKey(key=DeviceClass.HUMIDITY, device_id=None)
 KEY_PRESSURE = DeviceKey(key=DeviceClass.PRESSURE, device_id=None)
 KEY_VOLTAGE = DeviceKey(key=DeviceClass.VOLTAGE, device_id=None)
 KEY_MOVEMENT = DeviceKey(key="movement_counter", device_id=None)
+KEY_ACCELERATION = DeviceKey(key=DeviceClass.ACCELERATION, device_id=None)
 
 
 def bytes_to_service_info(payload: bytes) -> BluetoothServiceInfo:
@@ -39,6 +46,22 @@ def test_parsing_v5():
     assert up.entity_values[KEY_PRESSURE].native_value == 1013.54  # hPa
     assert up.entity_values[KEY_VOLTAGE].native_value == 2395  # mV
     assert up.entity_values[KEY_MOVEMENT].native_value == 114  # count
+    assert up.entity_values[KEY_ACCELERATION].native_value == 0  # acceleration
+
+
+def test_error_v5():
+    device = RuuvitagBluetoothDeviceData()
+    advertisement = bytes_to_service_info(V5_SENSOR_DATA_ERROR)
+    assert device.supported(advertisement)
+    up = device.update(advertisement)
+    expected_name = "RuuviTag DCFE"
+    assert up.devices[None].name == expected_name  # Parsed from advertisement
+    assert up.entity_values[KEY_TEMPERATURE].native_value == 7.2  # Celsius
+    assert up.entity_values[KEY_HUMIDITY].native_value == 61.84  # %
+    assert up.entity_values[KEY_PRESSURE].native_value == 1013.54  # hPa
+    assert up.entity_values[KEY_VOLTAGE].native_value == 2395  # mV
+    assert up.entity_values[KEY_MOVEMENT].native_value == 114  # count
+    assert up.entity_values[KEY_ACCELERATION].native_value == 0  # acceleration
 
 
 def test_parsing_v3():
@@ -52,3 +75,4 @@ def test_parsing_v3():
     assert up.entity_values[KEY_HUMIDITY].native_value == 89.0  # %
     assert up.entity_values[KEY_PRESSURE].native_value == 1017.44  # hPa
     assert up.entity_values[KEY_VOLTAGE].native_value == 2191  # mV
+    assert up.entity_values[KEY_ACCELERATION].native_value == 0  # acceleration

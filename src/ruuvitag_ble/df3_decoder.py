@@ -44,11 +44,12 @@ class DataFormat3Decoder:
         return (ax, ay, az)
 
     @property
-    def acceleration_total_mg(self) -> float | None:
+    def acceleration_total_mss(self) -> float | None:
         ax, ay, az = self.acceleration_vector_mg
         if ax is None or ay is None or az is None:
             return None
-        return math.sqrt(ax * ax + ay * ay + az * az)
+        # Conversion from milliG to m/s^2
+        return math.sqrt(ax * ax + ay * ay + az * az) / 1000.0 * 9.8
 
     @property
     def battery_voltage_mv(self) -> int | None:
