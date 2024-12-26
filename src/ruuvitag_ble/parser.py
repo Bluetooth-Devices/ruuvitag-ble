@@ -36,8 +36,7 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
         decoder = decoder_classes.get(data_format, DataFormat5Decoder)(raw_data)
 
         # Compute short identifier from MAC address
-        # (preferring the MAC address the tag broadcasts).
-        identifier = short_address(decoder.mac or service_info.address)
+        identifier = short_address(service_info.address)
         self.set_device_type("RuuviTag")
         self.set_device_manufacturer("Ruuvi Innovations Ltd.")
         self.set_device_name(f"RuuviTag {identifier}")
