@@ -18,7 +18,7 @@ KEY_MOVEMENT = DeviceKey(key="movement_counter", device_id=None)
 def bytes_to_service_info(payload: bytes) -> BluetoothServiceInfo:
     return BluetoothServiceInfo(
         name="Test",
-        address="00:00:00:00:00:00",
+        address="AB:CD:EF:BA:DC:FE",
         rssi=-60,
         manufacturer_data={1177: payload},
         service_data={},
@@ -32,7 +32,7 @@ def test_parsing_v5():
     advertisement = bytes_to_service_info(V5_SENSOR_DATA)
     assert device.supported(advertisement)
     up = device.update(advertisement)
-    expected_name = "RuuviTag EFAF"
+    expected_name = "RuuviTag DCFE"
     assert up.devices[None].name == expected_name  # Parsed from advertisement
     assert up.entity_values[KEY_TEMPERATURE].native_value == 7.2  # Celsius
     assert up.entity_values[KEY_HUMIDITY].native_value == 61.84  # %
@@ -46,9 +46,9 @@ def test_parsing_v3():
     advertisement = bytes_to_service_info(V3_SENSOR_DATA)
     assert device.supported(advertisement)
     up = device.update(advertisement)
-    expected_name = "RuuviTag EFAF"
+    expected_name = "RuuviTag DCFE"
     assert up.devices[None].name == expected_name  # Parsed from advertisement
-    assert up.entity_values[KEY_TEMPERATURE].native_value == 7.2  # Celsius
-    assert up.entity_values[KEY_HUMIDITY].native_value == 61.84  # %
-    assert up.entity_values[KEY_PRESSURE].native_value == 1013.54  # hPa
-    assert up.entity_values[KEY_VOLTAGE].native_value == 2395  # mV
+    assert up.entity_values[KEY_TEMPERATURE].native_value == 12.31  # Celsius
+    assert up.entity_values[KEY_HUMIDITY].native_value == 89.0  # %
+    assert up.entity_values[KEY_PRESSURE].native_value == 1017.44  # hPa
+    assert up.entity_values[KEY_VOLTAGE].native_value == 2191  # mV
