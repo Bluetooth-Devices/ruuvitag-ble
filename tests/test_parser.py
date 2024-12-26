@@ -14,6 +14,7 @@ V5_SENSOR_DATA_SHORT = (
 V3_SENSOR_DATA_SHORT = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08"
 V5_SENSOR_DATA_ERROR = b"\x05\x80\x00\xff\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 V3_SENSOR_DATA_ERROR = b"\x03\xff\x80\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff"
+INVALID_FORMAT_ERROR = b"\x02\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08\x8f"
 
 KEY_TEMPERATURE = DeviceKey(key=DeviceClass.TEMPERATURE, device_id=None)
 KEY_HUMIDITY = DeviceKey(key=DeviceClass.HUMIDITY, device_id=None)
@@ -32,6 +33,18 @@ def bytes_to_service_info(payload: bytes) -> BluetoothServiceInfo:
         address="AB:CD:EF:BA:DC:FE",
         rssi=-60,
         manufacturer_data={1177: payload},
+        service_data={},
+        service_uuids=[],
+        source="",
+    )
+
+
+def bytes_to_service_info_wrong_mfr(payload: bytes) -> BluetoothServiceInfo:
+    return BluetoothServiceInfo(
+        name="Test",
+        address="AB:CD:EF:BA:DC:FE",
+        rssi=-60,
+        manufacturer_data={1234: payload},
         service_data={},
         service_uuids=[],
         source="",
@@ -66,6 +79,7 @@ def test_error_v5():
     assert up.entity_values[KEY_TEMPERATURE].native_value is None
     assert up.entity_values[KEY_HUMIDITY].native_value is None
     assert up.entity_values[KEY_PRESSURE].native_value is None
+    assert up.entity_values[KEY_VOLTAGE].native_value is None
     assert up.entity_values[KEY_ACCELERATION_X].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Y].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Z].native_value is None
@@ -108,3 +122,19 @@ def test_error_v3():
     advertisement = bytes_to_service_info(V3_SENSOR_DATA_SHORT)
     with pytest.raises(ValueError):
         device.update(advertisement)
+
+
+def test_wrong_mfr():
+    device = RuuvitagBluetoothDeviceData()
+    advertisement = bytes_to_service_info_wrong_mfr(V3_SENSOR_DATA_ERROR)
+    assert device.supported(advertisement)
+    up = device.update(advertisement)
+    assert not up.entity_values
+
+
+def test_invalid_format():
+    device = RuuvitagBluetoothDeviceData()
+    advertisement = bytes_to_service_info(INVALID_FORMAT_ERROR)
+    assert device.supported(advertisement)
+    up = device.update(advertisement)
+    assert not up.entity_values
