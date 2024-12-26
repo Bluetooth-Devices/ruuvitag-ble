@@ -32,7 +32,6 @@ class DataFormat5Decoder:
     def pressure_hpa(self) -> float | None:
         if self.data[3] == 0xFFFF:
             return None
-
         return round((self.data[3] + 50000) / 100, 2)
 
     @property

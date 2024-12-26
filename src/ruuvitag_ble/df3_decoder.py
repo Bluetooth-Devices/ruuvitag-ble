@@ -24,13 +24,12 @@ class DataFormat3Decoder:
 
     @property
     def temperature_celsius(self) -> float | None:
+        if self.data[2] == -128:
+            return None
         return round(self.data[2] + self.data[3] / 100.0, 2)
 
     @property
     def pressure_hpa(self) -> float | None:
-        if self.data[3] == 0xFFFF:
-            return None
-
         return round((self.data[4] + 50000) / 100, 2)
 
     @property

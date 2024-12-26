@@ -13,7 +13,7 @@ V5_SENSOR_DATA_SHORT = (
 )
 V3_SENSOR_DATA_SHORT = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08"
 V5_SENSOR_DATA_ERROR = b"\x05\x80\x00\xff\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
-V3_SENSOR_DATA_ERROR = b"\x03\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+V3_SENSOR_DATA_ERROR = b"\x03\xff\x80\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff"
 
 KEY_TEMPERATURE = DeviceKey(key=DeviceClass.TEMPERATURE, device_id=None)
 KEY_HUMIDITY = DeviceKey(key=DeviceClass.HUMIDITY, device_id=None)
@@ -94,14 +94,13 @@ def test_parsing_v3():
 
 def test_error_v3():
     device = RuuvitagBluetoothDeviceData()
-    advertisement = bytes_to_service_info(V5_SENSOR_DATA_ERROR)
+    advertisement = bytes_to_service_info(V3_SENSOR_DATA_ERROR)
     assert device.supported(advertisement)
     up = device.update(advertisement)
     expected_name = "RuuviTag DCFE"
     assert up.devices[None].name == expected_name  # Parsed from advertisement
     assert up.entity_values[KEY_TEMPERATURE].native_value is None
     assert up.entity_values[KEY_HUMIDITY].native_value is None
-    assert up.entity_values[KEY_PRESSURE].native_value is None
     assert up.entity_values[KEY_ACCELERATION_X].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Y].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Z].native_value is None
