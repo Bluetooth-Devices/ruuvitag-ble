@@ -34,7 +34,7 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
 
         data_format = raw_data[0]
         try:
-            decoder_cls: Union[DataFormat3Decoder, DataFormat5Decoder] = (
+            decoder_cls: Type[Union[DataFormat3Decoder, DataFormat5Decoder]] = (
                 decoder_classes[data_format]
             )
         except KeyError:
