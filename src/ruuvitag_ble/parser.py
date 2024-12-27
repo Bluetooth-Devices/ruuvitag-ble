@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Type, Union
 
 from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
