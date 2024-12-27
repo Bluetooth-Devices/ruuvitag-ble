@@ -13,6 +13,14 @@ from ruuvitag_ble.df5_decoder import DataFormat5Decoder
 
 _LOGGER = logging.getLogger(__name__)
 
+decoder_classes: dict[
+    int,
+    Type[Union[DataFormat3Decoder, DataFormat5Decoder]],
+] = {
+    0x03: DataFormat3Decoder,
+    0x05: DataFormat5Decoder,
+}
+
 
 class RuuvitagBluetoothDeviceData(BluetoothData):
     """Data for Ruuvitag BLE sensors."""
@@ -25,25 +33,18 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             return None
 
         data_format = raw_data[0]
-        if data_format not in (0x03, 0x05):
+        try:
+            decoder_cls: Union[DataFormat3Decoder, DataFormat5Decoder] = (
+                decoder_classes[data_format]
+            )
+        except KeyError:
             _LOGGER.debug("Data format not supported: %s", raw_data)
             return
-
-        decoder_classes: dict[
-            int,
-            Type[Union[DataFormat3Decoder, DataFormat5Decoder]],
-        ] = {
-            0x03: DataFormat3Decoder,
-            0x05: DataFormat5Decoder,
-        }
-
-        decoder: Union[DataFormat3Decoder, DataFormat5Decoder] = decoder_classes.get(
-            data_format,
-            DataFormat5Decoder,
-        )(raw_data)
+        decoder = decoder_cls(raw_data)
 
         # Compute short identifier from MAC address
-        identifier = short_address(service_info.address)
+        # (preferring the MAC address the tag broadcasts).
+        identifier = short_address(decoder.mac or service_info.address)
         self.set_device_type("RuuviTag")
         self.set_device_manufacturer("Ruuvi Innovations Ltd.")
         self.set_device_name(f"RuuviTag {identifier}")
@@ -73,7 +74,7 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_value=decoder.battery_voltage_mv,
         )
 
-        if isinstance(decoder, DataFormat5Decoder):
+        if hasattr(decoder, "movement_counter"):
             self.update_sensor(
                 key="movement_counter",
                 device_class=DeviceClass.COUNT,
