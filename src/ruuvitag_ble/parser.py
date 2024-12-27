@@ -15,7 +15,7 @@ _LOGGER = logging.getLogger(__name__)
 
 decoder_classes: dict[
     int,
-    Type[Union[DataFormat3Decoder, DataFormat5Decoder]],
+    type[DataFormat3Decoder | DataFormat5Decoder],
 ] = {
     0x03: DataFormat3Decoder,
     0x05: DataFormat5Decoder,
