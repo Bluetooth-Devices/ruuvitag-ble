@@ -21,6 +21,8 @@ KEY_HUMIDITY = DeviceKey(key=DeviceClass.HUMIDITY, device_id=None)
 KEY_PRESSURE = DeviceKey(key=DeviceClass.PRESSURE, device_id=None)
 KEY_VOLTAGE = DeviceKey(key=DeviceClass.VOLTAGE, device_id=None)
 KEY_MOVEMENT = DeviceKey(key="movement_counter", device_id=None)
+KEY_SIGNAL_STRENGTH = DeviceKey(key=DeviceClass.SIGNAL_STRENGTH, device_id=None)
+KEY_SEQUENCE_NUMBER = DeviceKey(key="sequence_number", device_id=None)
 KEY_ACCELERATION_X = DeviceKey(key="acceleration_x", device_id=None)
 KEY_ACCELERATION_Y = DeviceKey(key="acceleration_y", device_id=None)
 KEY_ACCELERATION_Z = DeviceKey(key="acceleration_z", device_id=None)
@@ -63,10 +65,12 @@ def test_parsing_v5():
     assert up.entity_values[KEY_PRESSURE].native_value == 1013.54  # hPa
     assert up.entity_values[KEY_VOLTAGE].native_value == 2395  # mV
     assert up.entity_values[KEY_MOVEMENT].native_value == 114  # count
-    assert up.entity_values[KEY_ACCELERATION_X].native_value == -7.02  # acceleration
-    assert up.entity_values[KEY_ACCELERATION_Y].native_value == 6.39  # acceleration
-    assert up.entity_values[KEY_ACCELERATION_Z].native_value == -2.51  # acceleration
-    assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value == 9.82  # acceleration
+    assert up.entity_values[KEY_SIGNAL_STRENGTH].native_value == 0  # dBm
+    assert up.entity_values[KEY_SEQUENCE_NUMBER].native_value == 0  # count
+    assert up.entity_values[KEY_ACCELERATION_X].native_value == -7.02  # m/s^2
+    assert up.entity_values[KEY_ACCELERATION_Y].native_value == 6.39  # m/s^2
+    assert up.entity_values[KEY_ACCELERATION_Z].native_value == -2.51  # m/s^2
+    assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value == 9.82  # m/s^2
 
 
 def test_error_v5():
@@ -80,6 +84,7 @@ def test_error_v5():
     assert up.entity_values[KEY_HUMIDITY].native_value is None
     assert up.entity_values[KEY_PRESSURE].native_value is None
     assert up.entity_values[KEY_VOLTAGE].native_value is None
+    assert up.entity_values[KEY_SIGNAL_STRENGTH].native_value is None
     assert up.entity_values[KEY_ACCELERATION_X].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Y].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Z].native_value is None
@@ -100,10 +105,10 @@ def test_parsing_v3():
     assert up.entity_values[KEY_HUMIDITY].native_value == 89.0  # %
     assert up.entity_values[KEY_PRESSURE].native_value == 1017.44  # hPa
     assert up.entity_values[KEY_VOLTAGE].native_value == 2191  # mV
-    assert up.entity_values[KEY_ACCELERATION_X].native_value == 1.2  # acceleration
-    assert up.entity_values[KEY_ACCELERATION_Y].native_value == 0.37  # acceleration
-    assert up.entity_values[KEY_ACCELERATION_Z].native_value == 9.56  # acceleration
-    assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value == 9.65  # acceleration
+    assert up.entity_values[KEY_ACCELERATION_X].native_value == 1.2  # m/s^2
+    assert up.entity_values[KEY_ACCELERATION_Y].native_value == 0.37  # m/s^2
+    assert up.entity_values[KEY_ACCELERATION_Z].native_value == 9.56  # m/s^2
+    assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value == 9.65  # m/s^2
 
 
 def test_error_v3():
