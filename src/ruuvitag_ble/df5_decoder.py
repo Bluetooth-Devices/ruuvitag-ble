@@ -76,14 +76,14 @@ class DataFormat5Decoder:
     @property
     def battery_voltage_mv(self) -> int | None:
         voltage = self.data[7] >> 5
-        if voltage > 2046:  # invalid per spec
+        if voltage == 2047:  # invalid per spec
             return None
         return voltage + 1600
 
     @property
     def tx_power_dbm(self) -> int | None:
         tx_power = self.data[7] & 0x001F
-        if tx_power > 30:  # invalid per spec
+        if tx_power == 31:  # invalid per spec
             return None
         return -40 + (tx_power * 2)
 

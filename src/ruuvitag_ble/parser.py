@@ -104,17 +104,17 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
                 native_value=decoder.movement_counter,
             )
 
-        if hasattr(decoder, DeviceClass.SIGNAL_STRENGTH):
+        if hasattr(decoder, "tx_power_dbm"):
             self.update_sensor(
-                key=DeviceClass.SIGNAL_STRENGTH,
+                key="tx_power",
                 device_class=DeviceClass.SIGNAL_STRENGTH,
                 native_unit_of_measurement=Units.SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
                 native_value=decoder.tx_power_dbm,
             )
 
-        if hasattr(decoder, "sequence_number"):
+        if hasattr(decoder, "measurement_sequence_number"):
             self.update_sensor(
-                key="sequence_number",
+                key="measurement_sequence_number",
                 device_class=DeviceClass.COUNT,
                 native_unit_of_measurement=None,
                 native_value=decoder.measurement_sequence_number,
