@@ -95,7 +95,7 @@ def test_parsing_v3():
     assert device.supported(advertisement)
     up = device.update(advertisement)
     expected_name = "RuuviTag DCFE"
-    assert up.devices[None].name == expected_name  # Parsed from advertisement
+    assert up.devices[None].name == expected_name
     assert up.entity_values[KEY_TEMPERATURE].native_value == 12.31  # Celsius
     assert up.entity_values[KEY_HUMIDITY].native_value == 89.0  # %
     assert up.entity_values[KEY_PRESSURE].native_value == 1017.44  # hPa

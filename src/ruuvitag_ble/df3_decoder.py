@@ -74,3 +74,7 @@ class DataFormat3Decoder:
     @property
     def battery_voltage_mv(self) -> int | None:
         return self.data[8]
+
+    @property
+    def mac(self) -> str | None:
+        return None  # Not supported by this decoder

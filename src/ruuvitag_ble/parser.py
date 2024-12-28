@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Type, Union
 
 from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
@@ -12,6 +11,14 @@ from ruuvitag_ble.df3_decoder import DataFormat3Decoder
 from ruuvitag_ble.df5_decoder import DataFormat5Decoder
 
 _LOGGER = logging.getLogger(__name__)
+
+decoder_classes: dict[
+    int,
+    type[DataFormat3Decoder | DataFormat5Decoder],
+] = {
+    0x03: DataFormat3Decoder,
+    0x05: DataFormat5Decoder,
+}
 
 
 class RuuvitagBluetoothDeviceData(BluetoothData):
@@ -25,22 +32,14 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             return None
 
         data_format = raw_data[0]
-        if data_format not in (0x03, 0x05):
+        try:
+            decoder_cls: type[DataFormat3Decoder | DataFormat5Decoder] = (
+                decoder_classes[data_format]
+            )
+        except KeyError:
             _LOGGER.debug("Data format not supported: %s", raw_data)
-            return None
-
-        decoder_classes: dict[
-            int,
-            Type[Union[DataFormat3Decoder, DataFormat5Decoder]],
-        ] = {
-            0x03: DataFormat3Decoder,
-            0x05: DataFormat5Decoder,
-        }
-
-        decoder: Union[DataFormat3Decoder, DataFormat5Decoder] = decoder_classes.get(
-            data_format,
-            DataFormat5Decoder,
-        )(raw_data)
+            return
+        decoder = decoder_cls(raw_data)
 
         # Compute short identifier from MAC address
         identifier = short_address(service_info.address)
@@ -97,19 +96,23 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_value=decoder.acceleration_total_mss,
         )
 
-        if isinstance(decoder, DataFormat5Decoder):
+        if hasattr(decoder, "movement_counter"):
             self.update_sensor(
                 key="movement_counter",
                 device_class=DeviceClass.COUNT,
                 native_unit_of_measurement=None,
                 native_value=decoder.movement_counter,
             )
+
+        if hasattr(decoder, DeviceClass.SIGNAL_STRENGTH):
             self.update_sensor(
                 key=DeviceClass.SIGNAL_STRENGTH,
                 device_class=DeviceClass.SIGNAL_STRENGTH,
                 native_unit_of_measurement=Units.SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
                 native_value=decoder.tx_power_dbm,
             )
+
+        if hasattr(decoder, "sequence_number"):
             self.update_sensor(
                 key="sequence_number",
                 device_class=DeviceClass.COUNT,
