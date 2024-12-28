@@ -66,7 +66,7 @@ def test_parsing_v5():
     assert up.entity_values[KEY_VOLTAGE].native_value == 2395  # mV
     assert up.entity_values[KEY_MOVEMENT].native_value == 114  # count
     assert up.entity_values[KEY_TX_POWER].native_value == 4  # dBm
-    assert up.entity_values[KEY_SEQUENCE_NUMBER].native_value == 0  # count
+    assert up.entity_values[KEY_SEQUENCE_NUMBER].native_value == 26998  # count
     assert up.entity_values[KEY_ACCELERATION_X].native_value == -7.02  # m/s^2
     assert up.entity_values[KEY_ACCELERATION_Y].native_value == 6.39  # m/s^2
     assert up.entity_values[KEY_ACCELERATION_Z].native_value == -2.51  # m/s^2
