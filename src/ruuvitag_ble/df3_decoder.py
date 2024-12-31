@@ -26,6 +26,8 @@ class DataFormat3Decoder:
     def temperature_celsius(self) -> float | None:
         if self.data[2] == -128:
             return None
+        if self.data[3] > 99:
+            return None
         return round(self.data[2] + self.data[3] / 100.0, 2)
 
     @property
@@ -69,7 +71,7 @@ class DataFormat3Decoder:
         if ax is None or ay is None or az is None:
             return None
         # Conversion from milliG to m/s^2
-        return round(math.sqrt(ax * ax + ay * ay + az * az) / 1000.0 * 9.8, 2)
+        return round(math.hypot(ax, ay, az) / 1000.0 * 9.8, 2)
 
     @property
     def battery_voltage_mv(self) -> int | None:

@@ -14,6 +14,9 @@ V5_SENSOR_DATA_SHORT = (
 V3_SENSOR_DATA_SHORT = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08"
 V5_SENSOR_DATA_ERROR = b"\x05\x80\x00\xff\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 V3_SENSOR_DATA_ERROR = b"\x03\xff\x80\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff"
+V3_SENSOR_DATA_ERROR_TEMP_FRACTION = (
+    b"\x03\xff\x70\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff"
+)
 INVALID_FORMAT_ERROR = b"\x02\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08\x8f"
 
 KEY_TEMPERATURE = DeviceKey(key=DeviceClass.TEMPERATURE, device_id=None)
@@ -124,6 +127,9 @@ def test_error_v3():
     assert up.entity_values[KEY_ACCELERATION_Y].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Z].native_value is None
     assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value is None
+    advertisement = bytes_to_service_info(V3_SENSOR_DATA_ERROR_TEMP_FRACTION)
+    up = device.update(advertisement)
+    assert up.entity_values[KEY_TEMPERATURE].native_value is None
     advertisement = bytes_to_service_info(V3_SENSOR_DATA_SHORT)
     with pytest.raises(ValueError):
         device.update(advertisement)
