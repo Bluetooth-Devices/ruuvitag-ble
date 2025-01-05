@@ -24,11 +24,17 @@ class DataFormat3Decoder:
 
     @property
     def temperature_celsius(self) -> float | None:
-        if self.data[2] == -128:
-            return None
         if self.data[3] > 99:
             return None
-        return round(self.data[2] + self.data[3] / 100.0, 2)
+        fraction_part = round(self.data[3] / 100.0, 2)
+
+        # Ruuvi uses the MSB as the sign bit here
+        if self.data[2] & 0x80:
+            integer_part = -(self.data[2] & 0x7F)
+        else:
+            integer_part = self.data[2] & 0x7F
+
+        return integer_part + fraction_part
 
     @property
     def pressure_hpa(self) -> float | None:

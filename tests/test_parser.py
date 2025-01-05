@@ -11,6 +11,7 @@ V3_SENSOR_DATA = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08\x8f"
 V5_SENSOR_DATA_SHORT = (
     b"\x05\x05\xa0`\xa0\xc8\x9a\xfd4\x02\x8c\xff\x00cvriv\xde\xad{?\xef"
 )
+V3_SENSOR_DATA_LOWTEMP = b"\x03j\x91\x13\xc7\x10\xff\xe0\xff\xa6\x04\n\x0b\x17"
 V3_SENSOR_DATA_SHORT = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08"
 V5_SENSOR_DATA_ERROR = b"\x05\x80\x00\xff\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 V3_SENSOR_DATA_ERROR = b"\x03\xff\x80\xff\xff\xff\x80\x00\x80\x00\x80\x00\xff\xff"
@@ -112,6 +113,9 @@ def test_parsing_v3():
     assert up.entity_values[KEY_ACCELERATION_Y].native_value == 0.37  # m/s^2
     assert up.entity_values[KEY_ACCELERATION_Z].native_value == 9.56  # m/s^2
     assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value == 9.65  # m/s^2
+    advertisement = bytes_to_service_info(V3_SENSOR_DATA_LOWTEMP)
+    up = device.update(advertisement)
+    assert up.entity_values[KEY_TEMPERATURE].native_value == -16.81
 
 
 def test_error_v3():
