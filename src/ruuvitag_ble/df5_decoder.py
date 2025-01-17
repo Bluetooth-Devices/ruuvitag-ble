@@ -2,6 +2,7 @@
 Decoder for RuuviTag Data Format 5 data.
 
 Based on https://github.com/ttu/ruuvitag-sensor/blob/23e6555/ruuvitag_sensor/decoder.py (MIT Licensed)
+Ruuvi Sensor Protocols: https://github.com/ruuvi/ruuvi-sensor-protocols/blob/master/dataformat_05.md
 """
 
 from __future__ import annotations
@@ -32,7 +33,6 @@ class DataFormat5Decoder:
     def pressure_hpa(self) -> float | None:
         if self.data[3] == 0xFFFF:
             return None
-
         return round((self.data[3] + 50000) / 100, 2)
 
     @property
@@ -42,30 +42,49 @@ class DataFormat5Decoder:
         az = self.data[6]
         if ax == -32768 or ay == -32768 or az == -32768:
             return (None, None, None)
-
         return (ax, ay, az)
 
     @property
-    def acceleration_total_mg(self) -> float | None:
+    def acceleration_x_mss(self) -> float | None:
+        ax = self.data[4]
+        if ax == -32768:
+            return None
+        return round(ax / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_y_mss(self) -> float | None:
+        ay = self.data[5]
+        if ay == -32768:
+            return None
+        return round(ay / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_z_mss(self) -> float | None:
+        az = self.data[6]
+        if az == -32768:
+            return None
+        return round(az / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_total_mss(self) -> float | None:
         ax, ay, az = self.acceleration_vector_mg
         if ax is None or ay is None or az is None:
             return None
-        return math.sqrt(ax * ax + ay * ay + az * az)
+        # Conversion to m/s^2
+        return round(math.hypot(ax, ay, az) / 1000.0 * 9.8, 2)
 
     @property
     def battery_voltage_mv(self) -> int | None:
         voltage = self.data[7] >> 5
-        if voltage == 0b11111111111:
+        if voltage == 2047:  # invalid per spec
             return None
-
         return voltage + 1600
 
     @property
     def tx_power_dbm(self) -> int | None:
         tx_power = self.data[7] & 0x001F
-        if tx_power == 0b11111:
+        if tx_power == 31:  # invalid per spec
             return None
-
         return -40 + (tx_power * 2)
 
     @property
@@ -75,7 +94,3 @@ class DataFormat5Decoder:
     @property
     def measurement_sequence_number(self) -> int:
         return self.data[9]
-
-    @property
-    def mac(self) -> str:
-        return ":".join(f"{x:02X}" for x in self.data[10:])
