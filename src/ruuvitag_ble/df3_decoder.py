@@ -24,13 +24,20 @@ class DataFormat3Decoder:
 
     @property
     def temperature_celsius(self) -> float | None:
-        return round(self.data[2] + self.data[3] / 100.0, 2)
+        if self.data[3] > 99:
+            return None
+        fraction_part = round(self.data[3] / 100.0, 2)
+
+        # Ruuvi uses the MSB as the sign bit here
+        if self.data[2] & 0x80:
+            integer_part = -(self.data[2] & 0x7F)
+        else:
+            integer_part = self.data[2] & 0x7F
+
+        return integer_part + fraction_part
 
     @property
     def pressure_hpa(self) -> float | None:
-        if self.data[3] == 0xFFFF:
-            return None
-
         return round((self.data[4] + 50000) / 100, 2)
 
     @property
@@ -44,16 +51,34 @@ class DataFormat3Decoder:
         return (ax, ay, az)
 
     @property
-    def acceleration_total_mg(self) -> float | None:
+    def acceleration_x_mss(self) -> float | None:
+        ax = self.data[5]
+        if ax == -32768:
+            return None
+        return round(ax / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_y_mss(self) -> float | None:
+        ay = self.data[6]
+        if ay == -32768:
+            return None
+        return round(ay / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_z_mss(self) -> float | None:
+        az = self.data[7]
+        if az == -32768:
+            return None
+        return round(az / 1000.0 * 9.8, 2)
+
+    @property
+    def acceleration_total_mss(self) -> float | None:
         ax, ay, az = self.acceleration_vector_mg
         if ax is None or ay is None or az is None:
             return None
-        return math.sqrt(ax * ax + ay * ay + az * az)
+        # Conversion from milliG to m/s^2
+        return round(math.hypot(ax, ay, az) / 1000.0 * 9.8, 2)
 
     @property
     def battery_voltage_mv(self) -> int | None:
         return self.data[8]
-
-    @property
-    def mac(self) -> str | None:
-        return None  # Not supported by this decoder
