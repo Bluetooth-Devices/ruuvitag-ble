@@ -2,6 +2,7 @@
 Decoder for RuuviTag Data Format 5 data.
 
 Based on https://github.com/ttu/ruuvitag-sensor/blob/23e6555/ruuvitag_sensor/decoder.py (MIT Licensed)
+Ruuvi Sensor Protocols: https://github.com/ruuvi/ruuvi-sensor-protocols/blob/master/dataformat_05.md
 """
 
 from __future__ import annotations

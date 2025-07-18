@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 
 from bluetooth_data_tools import short_address
 from bluetooth_sensor_state_data import BluetoothData
@@ -80,3 +81,43 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
                 native_unit_of_measurement=None,
                 native_value=decoder.movement_counter,
             )
+
+        try:
+            acc_x_mg, acc_y_mg, acc_z_mg = decoder.acceleration_vector_mg
+            # Typing ignores are used here, as the arising TypeErrors
+            # will be caught at runtime (IOW, we don't waste runtime doing
+            # unlikely type checks).
+            acc_x_mss = round(acc_x_mg * 0.00980665, 2)  # type: ignore
+            acc_y_mss = round(acc_y_mg * 0.00980665, 2)  # type: ignore
+            acc_z_mss = round(acc_z_mg * 0.00980665, 2)  # type: ignore
+            acc_total_mss = round(
+                math.hypot(acc_x_mss, acc_y_mss, acc_z_mss),
+                2,
+            )
+        except TypeError:  # When any of the acceleration values are None (unlikely)
+            acc_total_mss = acc_x_mss = acc_y_mss = acc_z_mss = None  # type: ignore
+
+        self.update_sensor(
+            key="acceleration_x",
+            device_class=DeviceClass.ACCELERATION,
+            native_unit_of_measurement=Units.ACCELERATION_METERS_PER_SQUARE_SECOND,
+            native_value=acc_x_mss,
+        )
+        self.update_sensor(
+            key="acceleration_y",
+            device_class=DeviceClass.ACCELERATION,
+            native_unit_of_measurement=Units.ACCELERATION_METERS_PER_SQUARE_SECOND,
+            native_value=acc_y_mss,
+        )
+        self.update_sensor(
+            key="acceleration_z",
+            device_class=DeviceClass.ACCELERATION,
+            native_unit_of_measurement=Units.ACCELERATION_METERS_PER_SQUARE_SECOND,
+            native_value=acc_z_mss,
+        )
+        self.update_sensor(
+            key="acceleration_total",
+            device_class=DeviceClass.ACCELERATION,
+            native_unit_of_measurement=Units.ACCELERATION_METERS_PER_SQUARE_SECOND,
+            native_value=acc_total_mss,
+        )
