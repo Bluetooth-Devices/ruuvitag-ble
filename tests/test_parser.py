@@ -3,17 +3,10 @@ from sensor_state_data import DeviceClass, DeviceKey
 
 from ruuvitag_ble import RuuvitagBluetoothDeviceData
 
-V5_OUTDOOR_SENSOR_DATA = (
-    b"\x05\x05\xa0`\xa0\xc8\x9a\xfd4\x02\x8c\xff\x00cvriv\xde\xad{?\xef\xaf"
-)
-V5_OUTDOOR_SENSOR_DATA_INVALID_ACCEL = (
-    b"\x05\x05\xa0`\xa0\xc8\x9a\x80\x00\x02\x8c\xff\x00cvriv\xde\xad{?\xef\xaf"
-)
-# Unused
-# INDOOR_SENSOR_DATA = (
-#     b"\x05\x0e\xa4M~\xc8\x18\xfc\xbc\xfd\xf0\xff\xb4+\xf6\x00\x10<\xd97\x0f\xf7\xaa\x48"
-# )
-V3_SENSOR_DATA = b"\x03\xb2\x0c\x1f\xca \x00z\x00&\x03\xd0\x08\x8f"
+V5_OUTDOOR_SENSOR_DATA = bytes.fromhex("0505a060a0c89afd34028cff006376726976dead7b3fefaf")  # fmt: skip
+V5_OUTDOOR_SENSOR_DATA_INVALID_ACCEL = bytes.fromhex("0505a060a0c89a8000028cff006376726976dead7b3fefaf")  # fmt: skip
+# INDOOR_SENSOR_DATA = bytes.fromhex("050ea44d7ec818fcbcfdf0ffb42bf600103cd9370ff7aa48")  # fmt: skip
+V3_SENSOR_DATA = bytes.fromhex("03b20c1fca20007a002603d0088f")  # fmt: skip
 
 KEY_TEMPERATURE = DeviceKey(key=DeviceClass.TEMPERATURE, device_id=None)
 KEY_HUMIDITY = DeviceKey(key=DeviceClass.HUMIDITY, device_id=None)
