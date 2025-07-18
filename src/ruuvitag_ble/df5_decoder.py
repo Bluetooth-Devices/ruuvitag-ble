@@ -2,6 +2,7 @@
 Decoder for RuuviTag Data Format 5 data.
 
 Based on https://github.com/ttu/ruuvitag-sensor/blob/23e6555/ruuvitag_sensor/decoder.py (MIT Licensed)
+Ruuvi Sensor Protocols: https://github.com/ruuvi/ruuvi-sensor-protocols/blob/master/dataformat_05.md
 """
 
 from __future__ import annotations
@@ -50,7 +51,7 @@ class DataFormat5Decoder:
         ax, ay, az = self.acceleration_vector_mg
         if ax is None or ay is None or az is None:
             return None
-        return math.sqrt(ax * ax + ay * ay + az * az)
+        return math.hypot(ax, ay, az)
 
     @property
     def battery_voltage_mv(self) -> int | None:
