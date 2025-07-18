@@ -24,7 +24,14 @@ class DataFormat3Decoder:
 
     @property
     def temperature_celsius(self) -> float | None:
-        return round(self.data[2] + self.data[3] / 100.0, 2)
+        frac_byte = self.data[3]
+        if frac_byte >= 100:  # pragma: no cover
+            # Faulty reading; fractional part can't be >= 100
+            return None
+        int_byte = self.data[2]
+        # Handle MSB sign bit
+        value = ((int_byte & 0x7F) + frac_byte / 100.0) * (-1 if int_byte & 0x80 else 1)
+        return round(value, 2)
 
     @property
     def pressure_hpa(self) -> float | None:
