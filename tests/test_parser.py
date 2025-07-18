@@ -7,6 +7,7 @@ V5_OUTDOOR_SENSOR_DATA = bytes.fromhex("0505a060a0c89afd34028cff006376726976dead
 V5_OUTDOOR_SENSOR_DATA_INVALID_ACCEL = bytes.fromhex("0505a060a0c89a8000028cff006376726976dead7b3fefaf")  # fmt: skip
 # INDOOR_SENSOR_DATA = bytes.fromhex("050ea44d7ec818fcbcfdf0ffb42bf600103cd9370ff7aa48")  # fmt: skip
 V3_SENSOR_DATA = bytes.fromhex("03b20c1fca20007a002603d0088f")  # fmt: skip
+V3_SENSOR_DATA_SUBZERO = bytes.fromhex("03b28145ca20007a002603d0088f")  # fmt: skip
 
 KEY_TEMPERATURE = DeviceKey(key=DeviceClass.TEMPERATURE, device_id=None)
 KEY_HUMIDITY = DeviceKey(key=DeviceClass.HUMIDITY, device_id=None)
@@ -78,3 +79,12 @@ def test_parsing_v5_invalid_acceleration():
     assert up.entity_values[KEY_ACCELERATION_Y].native_value is None
     assert up.entity_values[KEY_ACCELERATION_Z].native_value is None
     assert up.entity_values[KEY_ACCELERATION_TOTAL].native_value is None
+
+
+def test_parsing_v3_subzero():
+    device = RuuvitagBluetoothDeviceData()
+    advertisement = bytes_to_service_info(V3_SENSOR_DATA_SUBZERO)
+    assert device.supported(advertisement)
+    up = device.update(advertisement)
+    # via the datasheet: 0x8145 = -1.69 °C
+    assert up.entity_values[KEY_TEMPERATURE].native_value == -1.69  # Celsius
