@@ -48,7 +48,7 @@ class DataFormat3Decoder:
         ax, ay, az = self.acceleration_vector_mg
         if ax is None or ay is None or az is None:
             return None
-        return math.sqrt(ax * ax + ay * ay + az * az)
+        return math.hypot(ax, ay, az)
 
     @property
     def battery_voltage_mv(self) -> int | None:
