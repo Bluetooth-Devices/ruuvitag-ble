@@ -10,15 +10,17 @@ from sensor_state_data import DeviceClass, Units
 
 from ruuvitag_ble.df3_decoder import DataFormat3Decoder
 from ruuvitag_ble.df5_decoder import DataFormat5Decoder
+from ruuvitag_ble.df6_decoder import DataFormat6Decoder
 
 _LOGGER = logging.getLogger(__name__)
 
 decoder_classes: dict[
     int,
-    type[DataFormat3Decoder | DataFormat5Decoder],
+    type[DataFormat3Decoder | DataFormat5Decoder | DataFormat6Decoder],
 ] = {
     0x03: DataFormat3Decoder,
     0x05: DataFormat5Decoder,
+    0x06: DataFormat6Decoder,
 }
 
 
@@ -34,9 +36,7 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
 
         data_format = raw_data[0]
         try:
-            decoder_cls: type[DataFormat3Decoder | DataFormat5Decoder] = (
-                decoder_classes[data_format]
-            )
+            decoder_cls = decoder_classes[data_format]
         except KeyError:
             _LOGGER.debug("Data format not supported: %s", raw_data)
             return
@@ -45,9 +45,10 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
         # Compute short identifier from MAC address
         # (preferring the MAC address the tag broadcasts).
         identifier = short_address(decoder.mac or service_info.address)
-        self.set_device_type("RuuviTag")
+        dev_type = "Ruuvi Air" if "Air" in str(service_info.name) else "RuuviTag"
+        self.set_device_type(dev_type)
         self.set_device_manufacturer("Ruuvi Innovations Ltd.")
-        self.set_device_name(f"RuuviTag {identifier}")
+        self.set_device_name(f"{dev_type} {identifier}")
 
         self.update_sensor(
             key=DeviceClass.TEMPERATURE,
@@ -67,12 +68,13 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_unit_of_measurement=Units.PRESSURE_HPA,
             native_value=decoder.pressure_hpa,
         )
-        self.update_sensor(
-            key=DeviceClass.VOLTAGE,
-            device_class=DeviceClass.VOLTAGE,
-            native_unit_of_measurement=Units.ELECTRIC_POTENTIAL_MILLIVOLT,
-            native_value=decoder.battery_voltage_mv,
-        )
+        if hasattr(decoder, "battery_voltage_mv"):
+            self.update_sensor(
+                key=DeviceClass.VOLTAGE,
+                device_class=DeviceClass.VOLTAGE,
+                native_unit_of_measurement=Units.ELECTRIC_POTENTIAL_MILLIVOLT,
+                native_value=decoder.battery_voltage_mv,
+            )
 
         if hasattr(decoder, "movement_counter"):
             self.update_sensor(
@@ -82,6 +84,53 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
                 native_value=decoder.movement_counter,
             )
 
+        if hasattr(decoder, "pm25_ug_m3"):
+            self.update_sensor(
+                key=DeviceClass.PM25,
+                device_class=DeviceClass.PM25,
+                native_unit_of_measurement=Units.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+                native_value=decoder.pm25_ug_m3,
+            )
+
+        if hasattr(decoder, "co2_ppm"):
+            self.update_sensor(
+                key=DeviceClass.CO2,
+                device_class=DeviceClass.CO2,
+                native_unit_of_measurement=Units.CONCENTRATION_PARTS_PER_MILLION,
+                native_value=decoder.co2_ppm,
+            )
+
+        if hasattr(decoder, "voc_index"):
+            self.update_sensor(
+                key="voc_index",
+                device_class=DeviceClass.VOLATILE_ORGANIC_COMPOUNDS,
+                native_unit_of_measurement=None,
+                native_value=decoder.voc_index,
+            )
+
+        if hasattr(decoder, "nox_index"):
+            self.update_sensor(
+                key="nox_index",
+                device_class=DeviceClass.NITROGEN_MONOXIDE,
+                native_unit_of_measurement=None,
+                native_value=decoder.nox_index,
+            )
+
+        if hasattr(decoder, "luminosity_lux"):
+            self.update_sensor(
+                key=DeviceClass.ILLUMINANCE,
+                device_class=DeviceClass.ILLUMINANCE,
+                native_unit_of_measurement=Units.LIGHT_LUX,
+                native_value=decoder.luminosity_lux,
+            )
+
+        if hasattr(decoder, "acceleration_vector_mg"):
+            self._update_acceleration(decoder)  # type: ignore[arg-type]
+
+    def _update_acceleration(
+        self,
+        decoder: DataFormat3Decoder | DataFormat5Decoder,
+    ) -> None:
         try:
             acc_x_mg, acc_y_mg, acc_z_mg = decoder.acceleration_vector_mg
             # Typing ignores are used here, as the arising TypeErrors
