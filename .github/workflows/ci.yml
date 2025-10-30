@@ -16,11 +16,19 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      # Vendored variation of https://raw.githubusercontent.com/tox-dev/action-pre-commit-uv/refs/heads/main/action.yml
+      - uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
         with:
-          python-version: "3.12"
-      - uses: pre-commit/action@v3.0.1
+          enable-cache: true
+          cache-dependency-glob: '.pre-commit-config.yaml'
+          python-version: "3.14"
+      - run: uv run --isolated --no-sync true && echo "pythonLocation=$(uv python find)" >>$GITHUB_ENV
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-3|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - run: uv run --no-sync --with pre-commit-uv pre-commit run --show-diff-on-failure --color=always
         env:
           RUFF_OUTPUT_FORMAT: "github"
 
@@ -33,24 +41,25 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
         os:
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv run pytest --cov . --cov-report=xml --cov-report=term-missing
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
 
   mypy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - run: uv run mypy --strict --install-types --non-interactive .
 
   build:
@@ -61,18 +70,18 @@ jobs:
       id-token: write
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@85856786d1ce8acfbcc2f13a5f3fbd6b938f9f41 # v7.1.2
       - run: uv build
       - run: uvx twine check dist/*
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist
           path: dist
       - name: Publish distribution to PyPI
         if: startsWith(github.ref, 'refs/tags')
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
         with:
           print_hash: true
           attestations: true
