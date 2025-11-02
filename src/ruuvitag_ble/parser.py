@@ -11,16 +11,23 @@ from sensor_state_data import DeviceClass, Units
 from ruuvitag_ble.df3_decoder import DataFormat3Decoder
 from ruuvitag_ble.df5_decoder import DataFormat5Decoder
 from ruuvitag_ble.df6_decoder import DataFormat6Decoder
+from ruuvitag_ble.dfe1_decoder import DataFormatE1Decoder
 
 _LOGGER = logging.getLogger(__name__)
 
 decoder_classes: dict[
     int,
-    type[DataFormat3Decoder | DataFormat5Decoder | DataFormat6Decoder],
+    type[
+        DataFormat3Decoder
+        | DataFormat5Decoder
+        | DataFormat6Decoder
+        | DataFormatE1Decoder
+    ],
 ] = {
     0x03: DataFormat3Decoder,
     0x05: DataFormat5Decoder,
     0x06: DataFormat6Decoder,
+    0xE1: DataFormatE1Decoder,
 }
 
 
@@ -84,12 +91,36 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
                 native_value=decoder.movement_counter,
             )
 
+        if hasattr(decoder, "pm1_ug_m3"):
+            self.update_sensor(
+                key=DeviceClass.PM1,
+                device_class=DeviceClass.PM1,
+                native_unit_of_measurement=Units.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+                native_value=decoder.pm1_ug_m3,
+            )
+
         if hasattr(decoder, "pm25_ug_m3"):
             self.update_sensor(
                 key=DeviceClass.PM25,
                 device_class=DeviceClass.PM25,
                 native_unit_of_measurement=Units.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
                 native_value=decoder.pm25_ug_m3,
+            )
+
+        if hasattr(decoder, "pm4_ug_m3"):
+            self.update_sensor(
+                key="pm4",
+                device_class=None,  # TODO: DeviceClass.PM4 isn't a thing...
+                native_unit_of_measurement=Units.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+                native_value=decoder.pm4_ug_m3,
+            )
+
+        if hasattr(decoder, "pm10_ug_m3"):
+            self.update_sensor(
+                key=DeviceClass.PM10,
+                device_class=DeviceClass.PM10,
+                native_unit_of_measurement=Units.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+                native_value=decoder.pm10_ug_m3,
             )
 
         if hasattr(decoder, "co2_ppm"):
