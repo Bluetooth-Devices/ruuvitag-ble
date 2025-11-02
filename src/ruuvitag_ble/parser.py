@@ -109,8 +109,8 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
 
         if hasattr(decoder, "pm4_ug_m3"):
             self.update_sensor(
-                key="pm4",
-                device_class=None,  # TODO: DeviceClass.PM4 isn't a thing...
+                key=DeviceClass.PM4,
+                device_class=DeviceClass.PM4,
                 native_unit_of_measurement=Units.CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
                 native_value=decoder.pm4_ug_m3,
             )
