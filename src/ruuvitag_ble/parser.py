@@ -12,6 +12,7 @@ from ruuvitag_ble.df3_decoder import DataFormat3Decoder
 from ruuvitag_ble.df5_decoder import DataFormat5Decoder
 from ruuvitag_ble.df6_decoder import DataFormat6Decoder
 from ruuvitag_ble.dfe1_decoder import DataFormatE1Decoder
+from ruuvitag_ble.iaqs import calculate_iaqs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -209,34 +210,3 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
             native_unit_of_measurement=Units.ACCELERATION_METERS_PER_SQUARE_SECOND,
             native_value=acc_total_mss,
         )
-
-
-def calculate_iaqs(co2_value: int | None, pm25_value: float | None) -> int | None:
-    """Calculate the Ruuvi indoor air quality score (IAQS).
-
-    Documentation for the calculation algorithm can be found at
-    https://docs.ruuvi.com/ruuvi-air-firmware/ruuvi-indoor-air-quality-score-iaqs.
-    """
-    AQI_MAX = 100
-    PM25_MAX = 60
-    PM25_MIN = 0
-    PM25_SCALE = AQI_MAX / (PM25_MAX - PM25_MIN)
-    CO2_MAX = 2300
-    CO2_MIN = 420
-    CO2_SCALE = AQI_MAX / (CO2_MAX - CO2_MIN)
-
-    def _clamp(value: float | int, low: int, high: int) -> float | int:
-        """Constrain the input value between low and high values."""
-        return min(max(value, low), high)
-
-    if co2_value is None or pm25_value is None:
-        return None
-
-    co2_clamped = _clamp(co2_value, CO2_MIN, CO2_MAX)
-    pm25_clamped = _clamp(pm25_value, PM25_MIN, PM25_MAX)
-
-    dx = (pm25_clamped - PM25_MIN) * PM25_SCALE
-    dy = (co2_clamped - CO2_MIN) * CO2_SCALE
-
-    r = math.hypot(dx, dy)
-    return round(_clamp(AQI_MAX - r, 0, AQI_MAX))
