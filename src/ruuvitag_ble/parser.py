@@ -12,6 +12,7 @@ from ruuvitag_ble.df3_decoder import DataFormat3Decoder
 from ruuvitag_ble.df5_decoder import DataFormat5Decoder
 from ruuvitag_ble.df6_decoder import DataFormat6Decoder
 from ruuvitag_ble.dfe1_decoder import DataFormatE1Decoder
+from ruuvitag_ble.iaqs import calculate_iaqs
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -157,6 +158,14 @@ class RuuvitagBluetoothDeviceData(BluetoothData):
 
         if hasattr(decoder, "acceleration_vector_mg"):
             self._update_acceleration(decoder)  # type: ignore[arg-type]
+
+        if hasattr(decoder, "co2_ppm") and hasattr(decoder, "pm25_ug_m3"):
+            self.update_sensor(
+                key="iaqs",
+                device_class=DeviceClass.AQI,
+                native_unit_of_measurement=None,
+                native_value=calculate_iaqs(decoder.co2_ppm, decoder.pm25_ug_m3),
+            )
 
     def _update_acceleration(
         self,
